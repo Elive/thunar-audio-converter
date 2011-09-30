@@ -55,4 +55,5 @@ let "PROGRESS+=$INCREMENT"
 done
 ) | $guitool  --progress --title "Converting files..." --percentage=0 --auto-close --auto-kill
 
-rm -rf ${tempdir}
+rm -rf "${tempdir}"
+
