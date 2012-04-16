@@ -25,7 +25,7 @@ fi
 
 main(){
     # pre {{{
-    local file PROCESS NUMBER_OF_FILES ARTIST TITLE ALBUM GENRE TRACKNUMBER DATE file_dest_dir
+    local file PROCESS NUMBER_OF_FILES ARTIST TITLE ALBUM GENRE TRACKNUMBER DATE file_dest_dir GENRE_NUM
     # How many files to make the progress bar
     PROGRESS=0
     NUMBER_OF_FILES="$#"

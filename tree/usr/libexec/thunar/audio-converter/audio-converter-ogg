@@ -3,8 +3,8 @@ guitool=zenity
 tempdir="/tmp/.${USER}-audio-converter-$$"
 
 exit_me(){
-   rm -rf ${tempdir}
-   exit 1
+    rm -rf "${tempdir}"
+    exit 1
 }
 
 trap "exit_me 0" 0 1 2 5 15
@@ -14,45 +14,108 @@ LOCKFILE="/tmp/.${USER}-$(basename $0).lock"
 
 if (ps -p $PROCESS) >/dev/null 2>&1
 then
-   echo "E: $(basename $0) is already running"
-   $guitool --error --text="$(basename $0) is already running"
-   exit 1
+    echo "E: $(basename $0) is already running"
+    $guitool --error --text="$(basename $0) is already running"
+    exit 1
 else
-   rm -f $LOCKFILE
-   echo $$ > $LOCKFILE
+    rm -f $LOCKFILE
+    echo $$ > $LOCKFILE
 fi
 
 
-# How many files to make the progress bar
-PROGRESS=0
-NUMBER_OF_FILES="$#"
-let "INCREMENT=100/$NUMBER_OF_FILES"
+main(){
+    # pre {{{
+    local file PROCESS NUMBER_OF_FILES ARTIST TITLE ALBUM GENRE TRACKNUMBER DATE file_dest_dir
+    # How many files to make the progress bar
+    PROGRESS=0
+    NUMBER_OF_FILES="$#"
+
+    # }}}
+
+    let "INCREMENT=10000000/$NUMBER_OF_FILES"
+
+    mkdir -p "$tempdir"
+
+    # FIXME: add this feature in elive, just like check-dependencies and others
+    package-install "vorbis-tools"
+
+    # Creating thumbnails. Specific work on picture should be add there as convert's option
+    file_dest_dir="$(pwd)/Reconverted_Audio"
+    mkdir -p "$file_dest_dir"
+    thunar "${file_dest_dir}" &
+    sleep 1
+
+    (
+    for file in "$@"
+    do
+        echo "$(( ${PROGRESS%%.*} / 100000 ))"
+        file="$file"
+        filename="${file##*/}"
+        filenameraw="${filename%.*}"
+        echo -e "# Converting: \t ${filename}"
+
+        rm -rf "${tempdir}"
+        mkdir -p "${tempdir}"
+
+        unset ARTIST TITLE ALBUM TRACKNUMBER DATE
+
+        case "$filename" in
+            *wav|*WAV)
+                oggenc -Q "${file}" -o "${tempdir}/third.ogg"
+                ;;
+
+            *flac|*FLAC)
 
 
-mkdir -p "$tempdir"
+                ARTIST="$(metaflac "$file" --show-tag=ARTIST | sed s/.*=//g)"
+                TITLE="$(metaflac "$file" --show-tag=TITLE | sed s/.*=//g)"
+                ALBUM="$(metaflac "$file" --show-tag=ALBUM | sed s/.*=//g)"
+                GENRE="$(metaflac "$file" --show-tag=GENRE | sed s/.*=//g)"
+                TRACKNUMBER="$(metaflac "$file" --show-tag=TRACKNUMBER | sed s/.*=//g)"
+                DATE="$(metaflac "$file" --show-tag=DATE | sed s/.*=//g)"
 
-# Creating thumbnails. Specific work on picture should be add there as convert's option
-( 
-   for i in "$@"
-   do
-echo "$PROGRESS"
-file="$i"
-filename="${file##*/}"
-filenameraw="${filename%.*}"
-echo -e "# Converting: \t ${filename}"
+                if [[ -z "${GENRE}" ]] ; then
+                    GENRE="$( zenity --entry --title="Type a Genre of Music" --entry-text="Chillout" )"
+                fi
 
-rm -rf "${tempdir}"
-mkdir -p "${tempdir}"
-cp "$file" "${tempdir}/first"
-file="${tempdir}/first"
+                flac -c -d "$file" | oggenc -q 6 -Q -a "${ARTIST}" -G "${GENRE}" -t "${TITLE}" -d "${DATE}" -n "${TRACKNUMBER}" -l "${ALBUM}"  - -o "${tempdir}/third.ogg"
 
-mplayer -quiet -vo null -vc null -af resample=44100 -ao pcm:waveheader:file="${tempdir}/second.wav" ${file}
-oggenc -Q ${tempdir}/second.wav -o ${tempdir}/third.ogg
-cp "${tempdir}/third.ogg" "${filenameraw}.ogg"
-rm -rf "${tempdir}"
+                ;;
 
-let "PROGRESS+=$INCREMENT"
-done
-) | $guitool  --progress --title "Converting files..." --percentage=0 --auto-close --auto-kill
+            *)
+                cp "$file" "${tempdir}/first"
+                file="${tempdir}/first"
 
-rm -rf ${tempdir}
+                mplayer -really-quiet -vo null -noconsolecontrols -af resample=44100 -ao pcm:waveheader:file="${tempdir}/second.wav" "${file}" 2>/dev/null
+
+                oggenc -Q "${file}" -o "${tempdir}/third.ogg"
+
+                ;;
+        esac
+
+
+        mv "${tempdir}/third.ogg" "${file_dest_dir}/${filenameraw}.ogg"
+        rm -rf "${tempdir}"
+
+        let "PROGRESS+=$INCREMENT"
+
+
+    done
+    ) | $guitool  --progress --title "Converting files..." --percentage=0 --auto-close --auto-kill
+
+
+    rm -rf "${tempdir}"
+
+
+}
+#
+#oggenc -Q ${tempdir}/second.wav -o ${tempdir}/third.ogg
+#cp "${tempdir}/third.ogg" "${filenameraw}.ogg"
+
+#
+#  MAIN
+#
+main "$@"
+
+# vim: set foldmethod=marker :
+
