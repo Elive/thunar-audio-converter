@@ -25,7 +25,7 @@ fi
 
 main(){
     # pre {{{
-    local file PROCESS NUMBER_OF_FILES ARTIST TITLE ALBUM GENRE TRACKNUMBER DATE
+    local file PROCESS NUMBER_OF_FILES ARTIST TITLE ALBUM GENRE TRACKNUMBER DATE file_dest_dir
     # How many files to make the progress bar
     PROGRESS=0
     NUMBER_OF_FILES="$#"
@@ -42,12 +42,17 @@ main(){
     do
         echo "$(( ${PROGRESS%%.*} / 100000 ))"
         file="$file"
+        file_dest_dir="$( dirname "$file" )"
+        file_dest_dir="${file_dest_dir}/Reconverted_Audio"
         filename="${file##*/}"
         filenameraw="${filename%.*}"
         echo -e "# Converting: \t ${filename}"
 
         rm -rf "${tempdir}"
         mkdir -p "${tempdir}"
+
+        mkdir -p "$file_dest_dir"
+        thunar "file_dest_dir"
 
         unset ARTIST TITLE ALBUM GENRE TRACKNUMBER DATE
 
@@ -60,12 +65,12 @@ main(){
 
                 package-install "flac,id3v2"
 
-                ARTIST="$(metaflac "$a" --show-tag=ARTIST | sed s/.*=//g)"
-                TITLE="$(metaflac "$a" --show-tag=TITLE | sed s/.*=//g)"
-                ALBUM="$(metaflac "$a" --show-tag=ALBUM | sed s/.*=//g)"
-                GENRE="$(metaflac "$a" --show-tag=GENRE | sed s/.*=//g)"
-                TRACKNUMBER="$(metaflac "$a" --show-tag=TRACKNUMBER | sed s/.*=//g)"
-                DATE="$(metaflac "$a" --show-tag=DATE | sed s/.*=//g)"
+                ARTIST="$(metaflac "$file" --show-tag=ARTIST | sed s/.*=//g)"
+                TITLE="$(metaflac "$file" --show-tag=TITLE | sed s/.*=//g)"
+                ALBUM="$(metaflac "$file" --show-tag=ALBUM | sed s/.*=//g)"
+                GENRE="$(metaflac "$file" --show-tag=GENRE | sed s/.*=//g)"
+                TRACKNUMBER="$(metaflac "$file" --show-tag=TRACKNUMBER | sed s/.*=//g)"
+                DATE="$(metaflac "$file" --show-tag=DATE | sed s/.*=//g)"
 
                 GENRE_NUM="$( id3v2 -L | awk -v genre="$GENRE" '{if ($2 == genre) print $1}' | sed 's|:.*$||g' )"
                 if [[ -z "${GENRE_NUM}" ]] ; then
@@ -90,7 +95,7 @@ main(){
         esac
 
 
-        mv "${tempdir}/third.mp3" "${filenameraw}.mp3"
+        mv "${tempdir}/third.mp3" "${file_dest_dir}/${filenameraw}.mp3"
         rm -rf "${tempdir}"
 
         let "PROGRESS+=$INCREMENT"
@@ -98,6 +103,7 @@ main(){
 
     done
     ) | $guitool  --progress --title "Converting files..." --percentage=0 --auto-close --auto-kill
+
 
     rm -rf "${tempdir}"
 
