@@ -58,7 +58,7 @@ main(){
 
             *flac|*FLAC)
 
-                package-install "flac,id3"
+                package-install "flac,id3v2"
 
                 ARTIST="$(metaflac "$a" --show-tag=ARTIST | sed s/.*=//g)"
                 TITLE="$(metaflac "$a" --show-tag=TITLE | sed s/.*=//g)"
@@ -67,9 +67,14 @@ main(){
                 TRACKNUMBER="$(metaflac "$a" --show-tag=TRACKNUMBER | sed s/.*=//g)"
                 DATE="$(metaflac "$a" --show-tag=DATE | sed s/.*=//g)"
 
+                GENRE_NUM="$( id3v2 -L | awk -v genre="$GENRE" '{if ($2 == genre) print $1}' | sed 's|:.*$||g' )"
+                if [[ -z "${GENRE_NUM}" ]] ; then
+                    GENRE_NUM="$( id3v2 -L | sed 's|: |\n|g' | zenity --list --title="Select a Genre" --column="id" --column="Genre" )"
+                fi
+
                 flac -c -d "$file" | lame --quiet -h -vbr-new -b 160 - -o "${tempdir}/third.mp3"
 
-                id3 -t "$TITLE" -T "${TRACKNUMBER:-0}" -a "$ARTIST" -A "$ALBUM" -y "$DATE" -g "${GENRE:-12}" "${tempdir}/third.mp3"
+                id3v2 -t "$TITLE" -T "${TRACKNUMBER:-0}" -a "$ARTIST" -A "$ALBUM" -y "$DATE" -g "${GENRE_NUM}" "${tempdir}/third.mp3"
 
                 ;;
 
