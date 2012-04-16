@@ -52,7 +52,7 @@ main(){
         mkdir -p "${tempdir}"
 
         mkdir -p "$file_dest_dir"
-        thunar "file_dest_dir"
+        thunar "$file_dest_dir"
 
         unset ARTIST TITLE ALBUM GENRE TRACKNUMBER DATE
 
