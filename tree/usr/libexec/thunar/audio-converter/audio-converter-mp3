@@ -63,9 +63,6 @@ main(){
 
             *flac|*FLAC)
 
-                # FIXME: add this feature in elive, just like check-dependencies and others
-                package-install "flac,id3v2"
-
                 ARTIST="$(metaflac "$file" --show-tag=ARTIST | sed s/.*=//g)"
                 TITLE="$(metaflac "$file" --show-tag=TITLE | sed s/.*=//g)"
                 ALBUM="$(metaflac "$file" --show-tag=ALBUM | sed s/.*=//g)"

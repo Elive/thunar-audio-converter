@@ -36,9 +36,6 @@ main(){
 
     mkdir -p "$tempdir"
 
-    # FIXME: add this feature in elive, just like check-dependencies and others
-    package-install "vorbis-tools"
-
     # Creating thumbnails. Specific work on picture should be add there as convert's option
     file_dest_dir="$(pwd)/Reconverted_Audio"
     mkdir -p "$file_dest_dir"
