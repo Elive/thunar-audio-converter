@@ -25,7 +25,7 @@ fi
 
 main(){
     # pre {{{
-    local file PROCESS NUMBER_OF_FILES ARTIST TITLE ALBUM GENRE TRACKNUMBER DATE file_dest_dir GENRE_NUM
+    local file PROCESS NUMBER_OF_FILES ARTIST TITLE ALBUM GENRE TRACKNUMBER DATE file_dest_dir GENRE_NUM GENRE_NUM2
     # How many files to make the progress bar
     PROGRESS=0
     NUMBER_OF_FILES="$#"
@@ -54,7 +54,7 @@ main(){
         rm -rf "${tempdir}"
         mkdir -p "${tempdir}"
 
-        unset ARTIST TITLE ALBUM GENRE TRACKNUMBER DATE
+        unset ARTIST TITLE ALBUM  TRACKNUMBER DATE GENRE
 
         case "$filename" in
             *wav|*WAV)
@@ -70,9 +70,16 @@ main(){
                 TRACKNUMBER="$(metaflac "$file" --show-tag=TRACKNUMBER | sed s/.*=//g)"
                 DATE="$(metaflac "$file" --show-tag=DATE | sed s/.*=//g)"
 
-                GENRE_NUM="$( id3v2 -L | awk -v genre="$GENRE" '{if ($2 == genre) print $1}' | sed 's|:.*$||g' )"
+                if [[ -n "${GENRE}" ]] ; then
+                    GENRE_NUM2="$( id3v2 -L | awk -v genre="$GENRE" '{if ($2 == genre) print $1}' | sed 's|:.*$||g' )"
+                    if [[ -n "${GENRE_NUM2}" ]] ; then
+                        GENRE_NUM="$GENRE_NUM2"
+                    fi
+
+                fi
+
                 if [[ -z "${GENRE_NUM}" ]] ; then
-                    GENRE_NUM="$( id3v2 -L | sed 's|: |\n|g' | zenity --list --title="Select a Genre" --column="id" --column="Genre" )"
+                    GENRE_NUM="$( id3v2 -L | sed 's|: |\n|g' | zenity --list --title="Select a Genre: $GENRE" --column="id" --column="Genre" )"
                 fi
 
                 flac -c -d "$file" | lame --quiet -h -vbr-new -b 160 - -o "${tempdir}/third.mp3"

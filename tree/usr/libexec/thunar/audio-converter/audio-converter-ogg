@@ -25,7 +25,7 @@ fi
 
 main(){
     # pre {{{
-    local file PROCESS NUMBER_OF_FILES ARTIST TITLE ALBUM GENRE TRACKNUMBER DATE file_dest_dir
+    local file PROCESS NUMBER_OF_FILES ARTIST TITLE ALBUM GENRE TRACKNUMBER DATE file_dest_dir GENRE2
     # How many files to make the progress bar
     PROGRESS=0
     NUMBER_OF_FILES="$#"
@@ -54,7 +54,7 @@ main(){
         rm -rf "${tempdir}"
         mkdir -p "${tempdir}"
 
-        unset ARTIST TITLE ALBUM TRACKNUMBER DATE
+        unset ARTIST TITLE ALBUM  TRACKNUMBER DATE GENRE
 
         case "$filename" in
             *wav|*WAV)
@@ -72,7 +72,12 @@ main(){
                 DATE="$(metaflac "$file" --show-tag=DATE | sed s/.*=//g)"
 
                 if [[ -z "${GENRE}" ]] ; then
-                    GENRE="$( zenity --entry --title="Type a Genre of Music" --entry-text="Chillout" )"
+                    if [[ -z "${GENRE2}" ]] ; then
+                        GENRE="$( zenity --entry --title="Type a Genre of Music" --entry-text="Chillout" )"
+                        GENRE2="$GENRE"
+                    else
+                        GENRE="$GENRE2"
+                    fi
                 fi
 
                 flac -c -d "$file" | oggenc -q 6 -Q -a "${ARTIST}" -G "${GENRE}" -t "${TITLE}" -d "${DATE}" -n "${TRACKNUMBER}" -l "${ALBUM}"  - -o "${tempdir}/third.ogg"
@@ -105,9 +110,6 @@ main(){
 
 
 }
-#
-#oggenc -Q ${tempdir}/second.wav -o ${tempdir}/third.ogg
-#cp "${tempdir}/third.ogg" "${filenameraw}.ogg"
 
 #
 #  MAIN
