@@ -9,23 +9,23 @@ exit_me(){
 
 trap "exit_me 0" 0 1 2 5 15
 
-LOCKFILE="/tmp/.${USER}-$(basename $0).lock"
-[[ -r $LOCKFILE ]] && PROCESS=$(cat $LOCKFILE) || PROCESS=" "
+#LOCKFILE="/tmp/.${USER}-$(basename $0).lock"
+#[[ -r $LOCKFILE ]] && PROCESS=$(cat $LOCKFILE) || PROCESS=" "
 
-if (ps -p $PROCESS) >/dev/null 2>&1
-then
-    echo "E: $(basename $0) is already running"
-    $guitool --error --text="$(basename $0) is already running"
-    exit 1
-else
-    rm -f $LOCKFILE
-    echo $$ > $LOCKFILE
-fi
+#if (ps -p $PROCESS) >/dev/null 2>&1
+#then
+    #echo "E: $(basename $0) is already running"
+    #$guitool --error --text="$(basename $0) is already running"
+    #exit 1
+#else
+    #rm -f $LOCKFILE
+    #echo $$ > $LOCKFILE
+#fi
 
 
 main(){
     # pre {{{
-    local file PROCESS NUMBER_OF_FILES ARTIST TITLE ALBUM GENRE TRACKNUMBER DATE file_dest_dir GENRE_NUM GENRE_NUM2
+    local file PROCESS NUMBER_OF_FILES ARTIST TITLE ALBUM GENRE TRACKNUMBER DATE file_dest_dir GENRE_NUM GENRE_NUM2 is_delete_original
     # How many files to make the progress bar
     PROGRESS=0
     NUMBER_OF_FILES="$#"
@@ -36,11 +36,18 @@ main(){
 
     mkdir -p "$tempdir"
 
-    # Creating thumbnails. Specific work on picture should be add there as convert's option
-    file_dest_dir="$(pwd)/Reconverted_Audio"
+    if zenity --question --text="Delete original files after a successful conversion ?" ; then
+        file_dest_dir="$(pwd)"
+        is_delete_original=1
+    else
+        file_dest_dir="$(pwd)/Reconverted_Audio"
+    fi
+
     mkdir -p "$file_dest_dir"
-    thunar "${file_dest_dir}" &
-    sleep 1
+    if ! ((is_delete_original)) ; then
+        thunar "${file_dest_dir}" &
+        sleep 1
+    fi
 
     (
     for file in "$@"
@@ -101,6 +108,11 @@ main(){
 
 
         mv "${tempdir}/third.mp3" "${file_dest_dir}/${filenameraw}.mp3"
+
+        if ((is_delete_original)) ; then
+            rm -f "${file}"
+        fi
+
         rm -rf "${tempdir}"
 
         let "PROGRESS+=$INCREMENT"
