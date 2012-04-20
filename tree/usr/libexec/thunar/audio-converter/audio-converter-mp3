@@ -89,7 +89,7 @@ main(){
                 fi
 
                 if [[ -z "${GENRE_NUM}" ]] ; then
-                    GENRE_NUM="$( id3v2 -L | sed 's|: |\n|g' | zenity --list --title="Select a Genre: $GENRE" --column="id" --column="Genre" )"
+                    GENRE_NUM="$( id3v2 -L | sed 's|: |\n|g' | zenity --list --title="Select a Genre: $GENRE" --column="id" --column="Genre" --height=400 )"
                 fi
 
                 flac -c -d "$file" | lame --quiet -h -vbr-new -b 160 - -o "${tempdir}/third.mp3"
