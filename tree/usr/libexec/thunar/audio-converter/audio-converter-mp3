@@ -58,6 +58,9 @@ main(){
         filenameraw="${filename%.*}"
         echo -e "# Converting: \t ${filename}"
 
+        # cache it for faster multiprocess (not i/o overload)
+        cat "${file}" > /dev/null
+
         rm -rf "${tempdir}"
         mkdir -p "${tempdir}"
 
