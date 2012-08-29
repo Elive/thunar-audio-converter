@@ -98,7 +98,7 @@ main(){
                 cp "$file" "${tempdir}/first"
                 file="${tempdir}/first"
 
-                mplayer -really-quiet -vo null -noconsolecontrols -af resample=44100 -ao pcm:waveheader:file="${tempdir}/second.wav" "${file}" 2>/dev/null
+                mplayer -really-quiet -af volnorm=0 -vo null -noconsolecontrols -af resample=44100 -ao pcm:waveheader:file="${tempdir}/second.wav" "${file}" 2>/dev/null
 
                 oggenc -Q "${file}" -o "${tempdir}/third.ogg"
 
