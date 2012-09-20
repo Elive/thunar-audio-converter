@@ -13,7 +13,6 @@ main(){
     # How many files to make the progress bar
     PROGRESS=0
     NUMBER_OF_FILES="$#"
-    . /usr/bin/gettext.sh
     TEXTDOMAIN="thunar-audio-converter"
     export TEXTDOMAIN
 
@@ -27,7 +26,7 @@ main(){
 
     mkdir -p "$tempdir"
 
-    if $guitool --question --text="$( eval_gettext "Delete original files after a successful conversion?" )" ; then
+    if $guitool --question --text=$"Delete original files after a successful conversion?" ; then
         file_dest_dir="$(pwd)"
         is_delete_original=1
     else
@@ -39,10 +38,10 @@ main(){
         thunar "${file_dest_dir}" &
         sleep 1
     fi
-    $guitool --info --text="$( eval_gettext "-e this is a test of possible bug" )"
+    $guitool --info --text=$"-e this is a test of possible bug"
 
     if [[ -z "$@" ]] ; then
-        $guitool --error --text="$( eval_gettext "Not given any file to convert" )"
+        $guitool --error --text=$"No files provided to convert"
         exit 1
     fi
 
@@ -87,7 +86,7 @@ main(){
                 fi
 
                 if [[ -z "${GENRE_NUM}" ]] ; then
-                    GENRE_NUM="$( id3v2 -L | sed 's|: |\n|g' | $guitool --list --title="$( eval_gettext "Select a Genre"): $GENRE" --column="id" --column="$( eval_gettext "Genre" )" --height=400 )"
+                    GENRE_NUM="$( id3v2 -L | sed 's|: |\n|g' | $guitool --list --title=$"Select a Genre"": $GENRE" --column="id" --column=$"Genre" --height=400 )"
                 fi
 
                 flac -c -d "$file" | lame --quiet -h -vbr-new -b 160 - -o "${tempdir}/third.mp3"
@@ -119,7 +118,7 @@ main(){
 
 
     done
-    ) | $guitool  --progress --title "$( eval_gettext "Converting files" )" --percentage=0 --auto-close --auto-kill
+    ) | $guitool  --progress --title $"Converting files" --percentage=0 --auto-close --auto-kill
 
 
     rm -rf "${tempdir}"
