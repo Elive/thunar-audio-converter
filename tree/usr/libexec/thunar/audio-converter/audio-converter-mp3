@@ -39,6 +39,13 @@ main(){
         thunar "${file_dest_dir}" &
         sleep 1
     fi
+    $guitool --info --text="$( eval_gettext "-e this is a test of possible bug" )"
+
+    if [[ -z "$@" ]] ; then
+        $guitool --error --text="$( eval_gettext "Not given any file to convert" )"
+        exit 1
+    fi
+
 
     (
     for file in "$@"

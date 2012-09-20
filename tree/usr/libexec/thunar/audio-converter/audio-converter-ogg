@@ -39,6 +39,11 @@ main(){
         sleep 1
     fi
 
+    if [[ -z "$@" ]] ; then
+        $guitool --error --text="$( eval_gettext "Not given any file to convert" )"
+        exit 1
+    fi
+
     (
     for file in "$@"
     do
