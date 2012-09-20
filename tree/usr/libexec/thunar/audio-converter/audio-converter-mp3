@@ -22,8 +22,6 @@ main(){
 
     # }}}
 
-    $guitool --info --text=$"-e this is a test of possible bug"
-
     if [[ -z "$@" ]] ; then
         $guitool --error --text=$"No files provided to convert"
         exit 1
