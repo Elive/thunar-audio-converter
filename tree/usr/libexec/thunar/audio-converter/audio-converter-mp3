@@ -22,6 +22,13 @@ main(){
 
     # }}}
 
+    $guitool --info --text=$"-e this is a test of possible bug"
+
+    if [[ -z "$@" ]] ; then
+        $guitool --error --text=$"No files provided to convert"
+        exit 1
+    fi
+
     let "INCREMENT=10000000/$NUMBER_OF_FILES"
 
     mkdir -p "$tempdir"
@@ -37,12 +44,6 @@ main(){
     if ! ((is_delete_original)) ; then
         thunar "${file_dest_dir}" &
         sleep 1
-    fi
-    $guitool --info --text=$"-e this is a test of possible bug"
-
-    if [[ -z "$@" ]] ; then
-        $guitool --error --text=$"No files provided to convert"
-        exit 1
     fi
 
 

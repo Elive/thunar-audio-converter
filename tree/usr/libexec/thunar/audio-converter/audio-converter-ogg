@@ -21,6 +21,10 @@ main(){
     tempdir="/tmp/.${USER}-audio-converter-$$"
     # }}}
 
+    if [[ -z "$@" ]] ; then
+        $guitool --error --text=$"No files provided to convert"
+        exit 1
+    fi
     let "INCREMENT=10000000/$NUMBER_OF_FILES"
 
     mkdir -p "$tempdir"
@@ -38,10 +42,6 @@ main(){
         sleep 1
     fi
 
-    if [[ -z "$@" ]] ; then
-        $guitool --error --text=$"No files provided to convert"
-        exit 1
-    fi
 
     (
     for file in "$@"
