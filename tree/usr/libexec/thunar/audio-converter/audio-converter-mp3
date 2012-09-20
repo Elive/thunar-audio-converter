@@ -1,7 +1,4 @@
 #!/bin/bash
-guitool=zenity
-tempdir="/tmp/.${USER}-audio-converter-$$"
-
 exit_me(){
     rm -rf "${tempdir}"
     exit 1
@@ -9,26 +6,20 @@ exit_me(){
 
 trap "exit_me 0" 0 1 2 5 15
 
-#LOCKFILE="/tmp/.${USER}-$(basename $0).lock"
-#[[ -r $LOCKFILE ]] && PROCESS=$(cat $LOCKFILE) || PROCESS=" "
-
-#if (ps -p $PROCESS) >/dev/null 2>&1
-#then
-    #echo "E: $(basename $0) is already running"
-    #$guitool --error --text="$(basename $0) is already running"
-    #exit 1
-#else
-    #rm -f $LOCKFILE
-    #echo $$ > $LOCKFILE
-#fi
-
 
 main(){
     # pre {{{
-    local file PROCESS NUMBER_OF_FILES ARTIST TITLE ALBUM GENRE TRACKNUMBER DATE file_dest_dir GENRE_NUM GENRE_NUM2 is_delete_original
+    local file PROCESS NUMBER_OF_FILES ARTIST TITLE ALBUM GENRE TRACKNUMBER DATE file_dest_dir GENRE_NUM GENRE_NUM2 is_delete_original PROGRESS filename guitool tempdir
     # How many files to make the progress bar
     PROGRESS=0
     NUMBER_OF_FILES="$#"
+    . /usr/bin/gettext.sh
+    TEXTDOMAIN="thunar-audio-converter"
+    export TEXTDOMAIN
+
+    guitool=zenity
+    tempdir="/tmp/.${USER}-audio-converter-$$"
+
 
     # }}}
 
@@ -36,7 +27,7 @@ main(){
 
     mkdir -p "$tempdir"
 
-    if zenity --question --text="Delete original files after a successful conversion ?" ; then
+    if $guitool --question --text="$( eval_gettext "Delete original files after a successful conversion?" )" ; then
         file_dest_dir="$(pwd)"
         is_delete_original=1
     else
@@ -89,7 +80,7 @@ main(){
                 fi
 
                 if [[ -z "${GENRE_NUM}" ]] ; then
-                    GENRE_NUM="$( id3v2 -L | sed 's|: |\n|g' | zenity --list --title="Select a Genre: $GENRE" --column="id" --column="Genre" --height=400 )"
+                    GENRE_NUM="$( id3v2 -L | sed 's|: |\n|g' | $guitool --list --title="$( eval_gettext "Select a Genre"): $GENRE" --column="id" --column="$( eval_gettext "Genre" )" --height=400 )"
                 fi
 
                 flac -c -d "$file" | lame --quiet -h -vbr-new -b 160 - -o "${tempdir}/third.mp3"
@@ -121,7 +112,7 @@ main(){
 
 
     done
-    ) | $guitool  --progress --title "Converting files..." --percentage=0 --auto-close --auto-kill
+    ) | $guitool  --progress --title "$( eval_gettext "Converting files" )" --percentage=0 --auto-close --auto-kill
 
 
     rm -rf "${tempdir}"
