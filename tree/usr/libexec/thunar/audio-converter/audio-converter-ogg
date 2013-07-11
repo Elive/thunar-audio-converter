@@ -14,6 +14,8 @@ main(){
     # How many files to make the progress bar
     PROGRESS=0
     NUMBER_OF_FILES="$#"
+
+    . gettext.sh
     TEXTDOMAIN="thunar-audio-converter"
     export TEXTDOMAIN
 
@@ -22,14 +24,14 @@ main(){
     # }}}
 
     if [[ -z "$@" ]] ; then
-        $guitool --error --text=$"No files provided to convert"
+	$guitool --error --text="$( eval_gettext "No files provided to convert" )"
         exit 1
     fi
     let "INCREMENT=10000000/$NUMBER_OF_FILES"
 
     mkdir -p "$tempdir"
 
-    if $guitool --question --text=$"Delete original files after a successful conversion?" ; then
+    if $guitool --question --text="$( eval_gettext "Delete original files after a successful conversion?" )" ; then
         file_dest_dir="$(pwd)"
         is_delete_original=1
     else
@@ -77,7 +79,7 @@ main(){
 
                 if [[ -z "${GENRE}" ]] ; then
                     if [[ -z "${GENRE2}" ]] ; then
-                        GENRE="$( $guitool --entry --title=$"Type a Genre of Music" --entry-text="Chillout" )"
+			GENRE="$( $guitool --entry --title="$( eval_gettext "Type a Genre of Music" )" --entry-text="Chillout" )"
                         GENRE2="$GENRE"
                     else
                         GENRE="$GENRE2"
@@ -111,7 +113,7 @@ main(){
 
 
     done
-    ) | $guitool  --progress --title $"Converting files" --percentage=0 --auto-close --auto-kill
+    ) | $guitool  --progress --title "$( eval_gettext "Converting files" )" --percentage=0 --auto-close --auto-kill
 
 
     rm -rf "${tempdir}"
