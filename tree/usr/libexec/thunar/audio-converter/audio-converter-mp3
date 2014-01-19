@@ -66,7 +66,7 @@ main(){
 
         case "$filename" in
             *wav|*WAV)
-                lame --quiet -h -vbr-new -b 160 "${file}" -o "${tempdir}/third.mp3"
+                lame --quiet -h -vbr-new -V 4 "${file}" -o "${tempdir}/third.mp3"
                 ;;
 
             *flac|*FLAC)
@@ -90,7 +90,7 @@ main(){
 		    GENRE_NUM="$( id3v2 -L | sed 's|: |\n|g' | $guitool --list --title="$( eval_gettext "Select a Genre" )"": $GENRE" --column="id" --column="$( eval_gettext "Genre" )" --height=400 )"
                 fi
 
-                flac -c -d "$file" | lame --quiet -h -vbr-new -b 192 - -o "${tempdir}/third.mp3"
+                flac -c -d "$file" | lame --quiet -h -vbr-new -V 3 - -o "${tempdir}/third.mp3"
 
                 id3v2 -t "$TITLE" -T "${TRACKNUMBER:-0}" -a "$ARTIST" -A "$ALBUM" -y "$DATE" -g "${GENRE_NUM}" "${tempdir}/third.mp3"
 
@@ -101,7 +101,7 @@ main(){
 
                 mplayer -really-quiet -af volnorm=0 -vo null -noconsolecontrols -af resample=44100 -ao pcm:waveheader:file="${tempdir}/second.wav" "${tempdir}/first" 2>/dev/null
 
-                lame --quiet -h -vbr-new -b 128 "${tempdir}/second.wav" -o "${tempdir}/third.mp3"
+                lame --quiet -h -vbr-new -V 5 "${tempdir}/second.wav" -o "${tempdir}/third.mp3"
 
                 ;;
         esac
