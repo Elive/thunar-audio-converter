@@ -10,7 +10,7 @@ trap "exit_me 0" 0 1 2 5 15
 
 main(){
     # pre {{{
-    local file PROCESS NUMBER_OF_FILES ARTIST TITLE ALBUM GENRE TRACKNUMBER DATEYEAR file_dest_dir GENRE_NUM GENRE_NUM2 is_delete_original PROGRESS filename guitool tempdir
+    local file PROCESS NUMBER_OF_FILES ARTIST TITLE ALBUM GENRE TRACKNUMBER DATEYEAR file_dest_dir GENRE_NUM GENRE_NUM2 is_delete_original PROGRESS filename guitool tempdir extension
     # How many files to make the progress bar
     PROGRESS=0
     NUMBER_OF_FILES="$#"
@@ -94,6 +94,7 @@ main(){
 		;;
 
 	    *m4a|*M4A)
+		extension="m4a"
 
 		ARTIST="$(ffprobe "$file" 2>&1 | grep -E "artist(\s)*:" | sed -e 's|^.*: ||g' )"
 		TITLE="$(ffprobe "$file" 2>&1 | grep -E "title(\s)*:" | sed -e 's|^.*: ||g' )"
@@ -116,7 +117,7 @@ main(){
 		fi
 
 
-		mplayer -really-quiet -af volnorm=0 -vo null -noconsolecontrols -af resample=44100 -ao pcm:waveheader:file="${tempdir}/second.wav" "${tempdir}/first" 2>/dev/null
+		mplayer -really-quiet -af volnorm=0 -vo null -noconsolecontrols -af resample=44100 -ao pcm:waveheader:file="${tempdir}/second.wav" "${tempdir}/first.${extension}" 2>/dev/null
 		oggenc -q 6 -Q -a "${ARTIST}" -G "${GENRE}" -t "${TITLE}" -d "${DATEYEAR}" -n "${TRACKNUMBER}" -l "${ALBUM}" "${tempdir}/second.wav" -o "${tempdir}/third.ogg"
 
 
@@ -124,9 +125,11 @@ main(){
 
 
 	    *)
-		cp "$file" "${tempdir}/first"
+		extension="${file##*.}"
 
-		mplayer -really-quiet -af volnorm=0 -vo null -noconsolecontrols -af resample=44100 -ao pcm:waveheader:file="${tempdir}/second.wav" "${tempdir}/first" 2>/dev/null
+		cp "$file" "${tempdir}/first.${extension}"
+
+		mplayer -really-quiet -af volnorm=0 -vo null -noconsolecontrols -af resample=44100 -ao pcm:waveheader:file="${tempdir}/second.wav" "${tempdir}/first.${extension}" 2>/dev/null
 
 		oggenc -Q "${tempdir}/second.wav" -o "${tempdir}/third.ogg"
 
