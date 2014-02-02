@@ -10,7 +10,7 @@ trap "exit_me 0" 0 1 2 5 15
 
 main(){
     # pre {{{
-    local file PROCESS NUMBER_OF_FILES ARTIST TITLE ALBUM GENRE TRACKNUMBER DATEYEAR file_dest_dir GENRE2 is_delete_original PROGRESS filename guitool tempdir
+    local file PROCESS NUMBER_OF_FILES ARTIST TITLE ALBUM GENRE TRACKNUMBER DATEYEAR file_dest_dir GENRE_NUM GENRE_NUM2 is_delete_original PROGRESS filename guitool tempdir
     # How many files to make the progress bar
     PROGRESS=0
     NUMBER_OF_FILES="$#"
