@@ -96,6 +96,8 @@ main(){
 	    *m4a|*M4A)
 		extension="m4a"
 
+		cp "$file" "${tempdir}/first.${extension}"
+
 		ARTIST="$(ffprobe "$file" 2>&1 | grep -E "artist(\s)*:" | sed -e 's|^.*: ||g' )"
 		TITLE="$(ffprobe "$file" 2>&1 | grep -E "title(\s)*:" | sed -e 's|^.*: ||g' )"
 		ALBUM="$(ffprobe "$file" 2>&1 | grep -E "album(\s)*:" | sed -e 's|^.*: ||g' )"
