@@ -17,6 +17,7 @@ main(){
     . gettext.sh
     TEXTDOMAIN="thunar-audio-converter"
     export TEXTDOMAIN
+    el_check_translations_required_notify
 
     guitool=zenity
     tempdir="/tmp/.${USER}-audio-converter-$$"
