@@ -1,4 +1,13 @@
 #!/bin/bash
+source /usr/lib/elive-tools/functions
+#el_make_environment
+. gettext.sh
+TEXTDOMAIN="thunar-audio-converter"
+export TEXTDOMAIN
+
+el_check_translations_required_notify
+
+
 exit_me(){
     rm -rf "${tempdir}"
     exit 1
@@ -15,140 +24,135 @@ main(){
     PROGRESS=0
     NUMBER_OF_FILES="$#"
 
-    . gettext.sh
-    TEXTDOMAIN="thunar-audio-converter"
-    export TEXTDOMAIN
-    el_check_translations_required_notify
-
     guitool=zenity
     tempdir="/tmp/.${USER}-audio-converter-$$"
     # }}}
 
     if [[ -z "$@" ]] ; then
-	$guitool --error --text="$( eval_gettext "No files provided to convert" )"
-	exit 1
+        $guitool --error --text="$( eval_gettext "No files provided to convert" )"
+        exit 1
     fi
     let "INCREMENT=10000000/$NUMBER_OF_FILES"
 
     mkdir -p "$tempdir"
 
     if $guitool --question --text="$( eval_gettext "Delete original files after a successful conversion?" )" ; then
-	file_dest_dir="$(pwd)"
-	is_delete_original=1
+        file_dest_dir="$(pwd)"
+        is_delete_original=1
     else
-	file_dest_dir="$(pwd)/Reconverted_Audio"
+        file_dest_dir="$(pwd)/Reconverted_Audio"
     fi
 
     mkdir -p "$file_dest_dir"
     if ! ((is_delete_original)) ; then
-	thunar "${file_dest_dir}" &
-	sleep 1
+        thunar "${file_dest_dir}" &
+        sleep 1
     fi
 
 
     (
     for file in "$@"
     do
-	echo "$(( ${PROGRESS%%.*} / 100000 ))"
-	file="$file"
-	filename="${file##*/}"
-	filenameraw="${filename%.*}"
-	echo -e "# Converting: \t ${filename}"
+        echo "$(( ${PROGRESS%%.*} / 100000 ))"
+        file="$file"
+        filename="${file##*/}"
+        filenameraw="${filename%.*}"
+        echo -e "# Converting: \t ${filename}"
 
-	# cache it for faster multiprocess (not i/o overload)
-	cat "${file}" > /dev/null
+        # cache it for faster multiprocess (not i/o overload)
+        cat "${file}" > /dev/null
 
-	rm -rf "${tempdir}"
-	mkdir -p "${tempdir}"
+        rm -rf "${tempdir}"
+        mkdir -p "${tempdir}"
 
-	unset ARTIST TITLE ALBUM  TRACKNUMBER DATEYEAR GENRE
+        unset ARTIST TITLE ALBUM  TRACKNUMBER DATEYEAR GENRE
 
-	case "$filename" in
-	    *wav|*WAV)
-		oggenc -Q "${file}" -o "${tempdir}/third.ogg"
-		;;
+        case "$filename" in
+            *wav|*WAV)
+                oggenc -Q "${file}" -o "${tempdir}/third.ogg"
+                ;;
 
-	    *flac|*FLAC)
-
-
-		ARTIST="$(metaflac "$file" --show-tag=ARTIST | sed s/.*=//g)"
-		TITLE="$(metaflac "$file" --show-tag=TITLE | sed s/.*=//g)"
-		ALBUM="$(metaflac "$file" --show-tag=ALBUM | sed s/.*=//g)"
-		GENRE="$(metaflac "$file" --show-tag=GENRE | sed s/.*=//g)"
-		TRACKNUMBER="$(metaflac "$file" --show-tag=TRACKNUMBER | sed s/.*=//g)"
-		DATEYEAR="$(metaflac "$file" --show-tag=DATE | sed s/.*=//g)"
-		DATEYEAR="${DATEYEAR:0:4}"
-
-		if [[ -n "${GENRE}" ]] ; then
-		    GENRE_NUM2="$( id3v2 -L | awk -v genre="$GENRE" '{if ($2 == genre) print $1}' | sed 's|:.*$||g' )"
-		    if [[ -n "${GENRE_NUM2}" ]] ; then
-			GENRE_NUM="$GENRE_NUM2"
-		    fi
-		fi
-
-		if [[ -z "${GENRE_NUM}" ]] ; then
-		    GENRE_NUM="$( id3v2 -L | sed 's|: |\n|g' | $guitool --list --title="$( eval_gettext "Select a Genre" )"": $GENRE" --column="id" --column="$( eval_gettext "Genre" )" --height=400 )"
-		fi
-
-		flac -c -d "$file" | oggenc -q 6 -Q -a "${ARTIST}" -G "${GENRE}" -t "${TITLE}" -d "${DATEYEAR}" -n "${TRACKNUMBER}" -l "${ALBUM}"  - -o "${tempdir}/third.ogg"
-
-		;;
-
-	    *m4a|*M4A)
-		extension="m4a"
-
-		cp "$file" "${tempdir}/first.${extension}"
-
-		ARTIST="$(ffprobe "$file" 2>&1 | grep -E "artist(\s)*:" | sed -e 's|^.*: ||g' )"
-		TITLE="$(ffprobe "$file" 2>&1 | grep -E "title(\s)*:" | sed -e 's|^.*: ||g' )"
-		ALBUM="$(ffprobe "$file" 2>&1 | grep -E "album(\s)*:" | sed -e 's|^.*: ||g' )"
-		GENRE="$(ffprobe "$file" 2>&1 | grep -E "genre(\s)*:" | sed -e 's|^.*: ||g' )"
-		TRACKNUMBER="$(ffprobe "$file" 2>&1 | grep -E "track(\s)*:" | sed -e 's|^.*: ||g' )"
-		DATEYEAR="$(ffprobe "$file" 2>&1 | grep -E "date(\s)*:" | sed -e 's|^.*: ||g' )"
-		DATEYEAR="${DATEYEAR:0:4}"
-
-		if [[ -n "${GENRE}" ]] ; then
-		    GENRE_NUM2="$( id3v2 -L | awk -v genre="$GENRE" '{if ($2 == genre) print $1}' | sed 's|:.*$||g' )"
-		    if [[ -n "${GENRE_NUM2}" ]] ; then
-			GENRE_NUM="$GENRE_NUM2"
-		    fi
-
-		fi
-
-		if [[ -z "${GENRE_NUM}" ]] ; then
-		    GENRE_NUM="$( id3v2 -L | sed 's|: |\n|g' | $guitool --list --title="$( eval_gettext "Select a Genre" )"": $GENRE" --column="id" --column="$( eval_gettext "Genre" )" --height=400 )"
-		fi
+            *flac|*FLAC)
 
 
-		mplayer -really-quiet -af volnorm=0 -vo null -noconsolecontrols -af resample=44100 -ao pcm:waveheader:file="${tempdir}/second.wav" "${tempdir}/first.${extension}" 2>/dev/null
-		oggenc -q 6 -Q -a "${ARTIST}" -G "${GENRE}" -t "${TITLE}" -d "${DATEYEAR}" -n "${TRACKNUMBER}" -l "${ALBUM}" "${tempdir}/second.wav" -o "${tempdir}/third.ogg"
+                ARTIST="$(metaflac "$file" --show-tag=ARTIST | sed s/.*=//g)"
+                TITLE="$(metaflac "$file" --show-tag=TITLE | sed s/.*=//g)"
+                ALBUM="$(metaflac "$file" --show-tag=ALBUM | sed s/.*=//g)"
+                GENRE="$(metaflac "$file" --show-tag=GENRE | sed s/.*=//g)"
+                TRACKNUMBER="$(metaflac "$file" --show-tag=TRACKNUMBER | sed s/.*=//g)"
+                DATEYEAR="$(metaflac "$file" --show-tag=DATE | sed s/.*=//g)"
+                DATEYEAR="${DATEYEAR:0:4}"
+
+                if [[ -n "${GENRE}" ]] ; then
+                    GENRE_NUM2="$( id3v2 -L | awk -v genre="$GENRE" '{if ($2 == genre) print $1}' | sed 's|:.*$||g' )"
+                    if [[ -n "${GENRE_NUM2}" ]] ; then
+                        GENRE_NUM="$GENRE_NUM2"
+                    fi
+                fi
+
+                if [[ -z "${GENRE_NUM}" ]] ; then
+                    GENRE_NUM="$( id3v2 -L | sed 's|: |\n|g' | $guitool --list --title="$( eval_gettext "Select a Genre" )"": $GENRE" --column="id" --column="$( eval_gettext "Genre" )" --height=400 )"
+                fi
+
+                flac -c -d "$file" | oggenc -q 6 -Q -a "${ARTIST}" -G "${GENRE}" -t "${TITLE}" -d "${DATEYEAR}" -n "${TRACKNUMBER}" -l "${ALBUM}"  - -o "${tempdir}/third.ogg"
+
+                ;;
+
+            *m4a|*M4A)
+                extension="m4a"
+
+                cp "$file" "${tempdir}/first.${extension}"
+
+                ARTIST="$(ffprobe "$file" 2>&1 | grep -E "artist(\s)*:" | sed -e 's|^.*: ||g' )"
+                TITLE="$(ffprobe "$file" 2>&1 | grep -E "title(\s)*:" | sed -e 's|^.*: ||g' )"
+                ALBUM="$(ffprobe "$file" 2>&1 | grep -E "album(\s)*:" | sed -e 's|^.*: ||g' )"
+                GENRE="$(ffprobe "$file" 2>&1 | grep -E "genre(\s)*:" | sed -e 's|^.*: ||g' )"
+                TRACKNUMBER="$(ffprobe "$file" 2>&1 | grep -E "track(\s)*:" | sed -e 's|^.*: ||g' )"
+                DATEYEAR="$(ffprobe "$file" 2>&1 | grep -E "date(\s)*:" | sed -e 's|^.*: ||g' )"
+                DATEYEAR="${DATEYEAR:0:4}"
+
+                if [[ -n "${GENRE}" ]] ; then
+                    GENRE_NUM2="$( id3v2 -L | awk -v genre="$GENRE" '{if ($2 == genre) print $1}' | sed 's|:.*$||g' )"
+                    if [[ -n "${GENRE_NUM2}" ]] ; then
+                        GENRE_NUM="$GENRE_NUM2"
+                    fi
+
+                fi
+
+                if [[ -z "${GENRE_NUM}" ]] ; then
+                    GENRE_NUM="$( id3v2 -L | sed 's|: |\n|g' | $guitool --list --title="$( eval_gettext "Select a Genre" )"": $GENRE" --column="id" --column="$( eval_gettext "Genre" )" --height=400 )"
+                fi
 
 
-		;;
+                mplayer -really-quiet -af volnorm=0 -vo null -noconsolecontrols -af resample=44100 -ao pcm:waveheader:file="${tempdir}/second.wav" "${tempdir}/first.${extension}" 2>/dev/null
+                oggenc -q 6 -Q -a "${ARTIST}" -G "${GENRE}" -t "${TITLE}" -d "${DATEYEAR}" -n "${TRACKNUMBER}" -l "${ALBUM}" "${tempdir}/second.wav" -o "${tempdir}/third.ogg"
 
 
-	    *)
-		extension="${file##*.}"
-
-		cp "$file" "${tempdir}/first.${extension}"
-
-		mplayer -really-quiet -af volnorm=0 -vo null -noconsolecontrols -af resample=44100 -ao pcm:waveheader:file="${tempdir}/second.wav" "${tempdir}/first.${extension}" 2>/dev/null
-
-		oggenc -Q "${tempdir}/second.wav" -o "${tempdir}/third.ogg"
-
-		;;
-	esac
+                ;;
 
 
-	mv "${tempdir}/third.ogg" "${file_dest_dir}/${filenameraw}.ogg"
+            *)
+                extension="${file##*.}"
 
-	if ((is_delete_original)) ; then
-	    rm -f "${file}"
-	fi
+                cp "$file" "${tempdir}/first.${extension}"
 
-	rm -rf "${tempdir}"
+                mplayer -really-quiet -af volnorm=0 -vo null -noconsolecontrols -af resample=44100 -ao pcm:waveheader:file="${tempdir}/second.wav" "${tempdir}/first.${extension}" 2>/dev/null
 
-	let "PROGRESS+=$INCREMENT"
+                oggenc -Q "${tempdir}/second.wav" -o "${tempdir}/third.ogg"
+
+                ;;
+        esac
+
+
+        mv "${tempdir}/third.ogg" "${file_dest_dir}/${filenameraw}.ogg"
+
+        if ((is_delete_original)) ; then
+            rm -f "${file}"
+        fi
+
+        rm -rf "${tempdir}"
+
+        let "PROGRESS+=$INCREMENT"
 
 
     done
