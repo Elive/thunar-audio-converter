@@ -97,7 +97,7 @@ main(){
                     GENRE_NUM="$( id3v2 -L | sed 's|: |\n|g' | $guitool --list --title="$( eval_gettext "Select a Genre" )"": $GENRE" --column="id" --column="$( eval_gettext "Genre" )" --height=400 )"
                 fi
 
-                flac -c -d "$file" | lame --quiet -vbr-new -V 4 -q 0 - -o "${tempdir}/third.mp3"
+                flac -s -c -d "$file" | lame --quiet -vbr-new -V 4 -q 0 - -o "${tempdir}/third.mp3"
 
                 id3v2 -t "$TITLE" -T "${TRACKNUMBER:-0}" -a "$ARTIST" -A "$ALBUM" -y "$DATEYEAR" -g "${GENRE_NUM}" "${tempdir}/third.mp3"
 

@@ -94,7 +94,7 @@ main(){
                     GENRE_NUM="$( id3v2 -L | sed 's|: |\n|g' | $guitool --list --title="$( eval_gettext "Select a Genre" )"": $GENRE" --column="id" --column="$( eval_gettext "Genre" )" --height=400 )"
                 fi
 
-                flac -c -d "$file" | oggenc -q 6 -Q -a "${ARTIST}" -G "${GENRE}" -t "${TITLE}" -d "${DATEYEAR}" -n "${TRACKNUMBER}" -l "${ALBUM}"  - -o "${tempdir}/third.ogg"
+                flac -s -c -d "$file" | oggenc -q 6 -Q -a "${ARTIST}" -G "${GENRE}" -t "${TITLE}" -d "${DATEYEAR}" -n "${TRACKNUMBER}" -l "${ALBUM}"  - -o "${tempdir}/third.ogg"
 
                 ;;
 
