@@ -103,6 +103,12 @@ main(){
 
                 ;;
 
+            *mp3|*MP3)
+                extension="mp3"
+
+                lame --quiet -vbr-new -V 3 -q 0 "${file}" -o "${tempdir}/third.mp3"
+
+                ;;
             *m4a|*M4A)
                 extension="m4a"
 
