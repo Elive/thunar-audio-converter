@@ -5,8 +5,6 @@ source /usr/lib/elive-tools/functions
 TEXTDOMAIN="thunar-audio-converter"
 export TEXTDOMAIN
 
-el_check_translations_required_notify
-
 
 exit_me(){
     rm -rf "${tempdir}"
@@ -32,6 +30,11 @@ main(){
         $guitool --error --text="$( eval_gettext "No files provided to convert" )"
         exit 1
     fi
+
+    if el_check_translations_required ; then
+        $guitool --warning --text="$( eval_gettext "This application is not fully translated to your language, you can run Eltrans and collaborate to have it correctly translated for everybody!." )"
+    fi
+
     let "INCREMENT=10000000/$NUMBER_OF_FILES"
 
     mkdir -p "$tempdir"
