@@ -10,11 +10,11 @@ export TEXTDOMAIN
 #lockfile="/tmp/.$(basename $0)-${USER}.lock"
 
 exit_ok(){
-    rm -rf "${tempdir}"
+    rm -rf "${tempdir}" "$logs"
     #rm -f "$lockfile"
 }
 exit_error(){
-    rm -rf "${tempdir}"
+    rm -rf "${tempdir}" "$logs"
     #rm -f "$lockfile"
 }
 
@@ -49,6 +49,7 @@ main(){
 
     guitool=zenity
     tempdir="/tmp/.${USER}-audio-converter-$$"
+    logs="/tmp/.$(basename $0)-${USER}-logs.txt"
 
 
     # }}}
@@ -135,7 +136,19 @@ main(){
             *mp3|*MP3)
                 extension="mp3"
 
-                lame --quiet --vbr-new -V 3 -q 0 "${file}" -o "${tempdir}/third.mp3"
+                lame --vbr-new -V 3 -q 0 "$file" -o "${tempdir}/third.mp3"  1>"$logs" 2>&1
+                returned="$?"
+
+                if grep -qsE "(Aborting layer . decode|illegal bit allocation value)" "$logs" ; then
+                    el_explain 0 "  MPEG-3 mode force: $(basename "$file" )"
+                    lame --vbr-new --mp3input -V 3 -q 0 "$file" -o "${tempdir}/third.mp3"  1>"$logs" 2>&1
+                    returned="$?"
+                fi
+
+                if [[ "$returned" != 0 ]] ; then
+                    NOREPORTS=1 el_warning "error converting, using back original file..."
+                    cp -f "$file" "${tempdir}/third.mp3"
+                fi
 
                 ;;
             *m4a|*M4A)
@@ -184,7 +197,7 @@ main(){
         esac
 
 
-        mv "${tempdir}/third.mp3" "${file_dest_dir}/${filenameraw}.mp3"
+        mv -f "${tempdir}/third.mp3" "${file_dest_dir}/${filenameraw}.mp3"
 
         if ((is_delete_original)) ; then
             rm -f "${file}"
