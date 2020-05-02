@@ -101,7 +101,7 @@ main(){
 
         case "$filename" in
             *wav|*WAV)
-                lame --quiet -vbr-new -V 3 -q 0 "${file}" -o "${tempdir}/third.mp3"
+                lame --quiet --vbr-new -V 3 -q 0 "${file}" -o "${tempdir}/third.mp3"
                 ;;
 
             *flac|*FLAC)
@@ -126,7 +126,7 @@ main(){
                     GENRE_NUM="$( id3v2 -L | sed 's|: |\n|g' | $guitool --list --title="$( eval_gettext "Select a Genre" )"": $GENRE" --column="id" --column="$( eval_gettext "Genre" )" --height=400 )"
                 fi
 
-                flac -s -c -d "$file" | lame --quiet -vbr-new -V 3 -q 0 - -o "${tempdir}/third.mp3"
+                flac -s -c -d "$file" | lame --quiet --vbr-new -V 3 -q 0 - -o "${tempdir}/third.mp3"
 
                 id3v2 -t "$TITLE" -T "${TRACKNUMBER:-0}" -a "$ARTIST" -A "$ALBUM" -y "$DATEYEAR" -g "${GENRE_NUM}" "${tempdir}/third.mp3"
 
@@ -135,7 +135,7 @@ main(){
             *mp3|*MP3)
                 extension="mp3"
 
-                lame --quiet -vbr-new -V 3 -q 0 "${file}" -o "${tempdir}/third.mp3"
+                lame --quiet --vbr-new -V 3 -q 0 "${file}" -o "${tempdir}/third.mp3"
 
                 ;;
             *m4a|*M4A)
@@ -164,7 +164,7 @@ main(){
                 fi
 
                 mplayer -really-quiet -af volnorm=0 -vo null -noconsolecontrols -af resample=44100 -ao pcm:waveheader:file="${tempdir}/second.wav" "${tempdir}/first.${extension}" 2>/dev/null
-                lame --quiet -vbr-new -V 4 -q 0 "${tempdir}/second.wav" -o "${tempdir}/third.mp3"
+                lame --quiet --vbr-new -V 4 -q 0 "${tempdir}/second.wav" -o "${tempdir}/third.mp3"
 
 
                 id3v2 -t "$TITLE" -T "${TRACKNUMBER:-0}" -a "$ARTIST" -A "$ALBUM" -y "$DATEYEAR" -g "${GENRE_NUM}" "${tempdir}/third.mp3"
@@ -178,7 +178,7 @@ main(){
 
                 mplayer -really-quiet -af volnorm=0 -vo null -noconsolecontrols -af resample=44100 -ao pcm:waveheader:file="${tempdir}/second.wav" "${tempdir}/first.${extension}" 2>/dev/null
 
-                lame --quiet -vbr-new -V 4 -q 0 "${tempdir}/second.wav" -o "${tempdir}/third.mp3"
+                lame --quiet --vbr-new -V 4 -q 0 "${tempdir}/second.wav" -o "${tempdir}/third.mp3"
 
                 ;;
         esac
