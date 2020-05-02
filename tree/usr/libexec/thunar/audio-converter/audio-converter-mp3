@@ -70,16 +70,7 @@ main(){
     mkdir -p "$tempdir"
 
     if $guitool --question --text="$( eval_gettext "Delete original files after a successful conversion?" )" ; then
-        file_dest_dir="$(pwd)"
         is_delete_original=1
-    else
-        file_dest_dir="$(pwd)/Reconverted_Audio"
-    fi
-
-    mkdir -p "$file_dest_dir"
-    if ! ((is_delete_original)) ; then
-        thunar "${file_dest_dir}" &
-        sleep 1
     fi
 
 
@@ -90,6 +81,14 @@ main(){
         file="$file"
         filename="${file##*/}"
         filenameraw="${filename%.*}"
+
+        if ((is_delete_original)) ; then
+            file_dest_dir="$( dirname "$file" )"
+        else
+            file_dest_dir="$( dirname "$file" )/Reconverted_Audio"
+            mkdir -p "$file_dest_dir"
+        fi
+
         echo -e "# Converting: \t ${filename}"
 
         # cache it for faster multiprocess (not i/o overload)
