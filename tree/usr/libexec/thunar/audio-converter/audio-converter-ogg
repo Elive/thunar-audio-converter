@@ -11,11 +11,11 @@ export TEXTDOMAIN
 #lockfile="/tmp/.$(basename $0)-${USER}.lock"
 
 exit_ok(){
-    rm -rf "${tempdir}"
+    rm -rf "${tempdir}" "$logs"
     #rm -f "$lockfile"
 }
 exit_error(){
-    rm -rf "${tempdir}"
+    rm -rf "${tempdir}" "$logs"
     #rm -f "$lockfile"
 }
 
@@ -47,8 +47,12 @@ main(){
     PROGRESS=0
     NUMBER_OF_FILES="$#"
 
+
     guitool=zenity
     tempdir="/tmp/.${USER}-audio-converter-$$"
+    logs="/tmp/.$(basename $0)-${USER}-logs.txt"
+
+
     # }}}
 
     if [[ -z "$@" ]] ; then
@@ -59,6 +63,8 @@ main(){
     if el_check_translations_required ; then
         $guitool --warning --text="$( eval_gettext "This application is not fully translated to your language, you can run Eltrans and collaborate to have it correctly translated for everybody!." )"
     fi
+
+
 
     let "INCREMENT=10000000/$NUMBER_OF_FILES"
 
@@ -88,7 +94,7 @@ main(){
         echo -e "# Converting: \t ${filename}"
 
         # cache it for faster multiprocess (not i/o overload)
-        cat "${file}" > /dev/null
+        precache "$file" 2>/dev/null
 
         rm -rf "${tempdir}"
         mkdir -p "${tempdir}"
@@ -130,6 +136,10 @@ main(){
                 extension="mp3"
 
                 cp "$file" "${tempdir}/first.${extension}"
+
+                if ! el_dependencies_check "mplayer" ; then
+                    el_dependencies_install mplayer
+                fi
 
                 ARTIST="$( LC_ALL=C mplayer -identify -frames 0 "$file" 2>&1 | grep "^ Artist: " | sed -e 's|^ Artist: ||g' | head -1 )"
                 TITLE="$( LC_ALL=C mplayer -identify -frames 0 "$file" 2>&1 | grep "^ Title: " | sed -e 's|^ Title: ||g' | head -1 )"
@@ -203,11 +213,11 @@ main(){
         esac
 
 
-        mv "${tempdir}/third.ogg" "${file_dest_dir}/${filenameraw}.ogg"
-
         if ((is_delete_original)) ; then
             rm -f "${file}"
         fi
+
+        mv -f "${tempdir}/third.ogg" "${file_dest_dir}/${filenameraw}.ogg"
 
         rm -rf "${tempdir}"
 
