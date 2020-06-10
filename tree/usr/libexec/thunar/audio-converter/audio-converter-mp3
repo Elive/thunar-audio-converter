@@ -60,7 +60,7 @@ main(){
     fi
 
     if el_check_translations_required ; then
-        $guitool --warning --text="$( eval_gettext "This application is not fully translated to your language, you can run Eltrans and collaborate to have it correctly translated for everybody!." )"
+        $guitool --warning --text="$( eval_gettext "This application is not fully translated to your language. You can run Eltrans and help us making it correctly translated for everybody!" )"
     fi
 
 
@@ -69,7 +69,7 @@ main(){
 
     mkdir -p "$tempdir"
 
-    if $guitool --question --text="$( eval_gettext "Delete original files after a successful conversion?" )" ; then
+    if $guitool --question --text="$( eval_gettext "Delete the original files after a successful conversion?" )" ; then
         is_delete_original=1
     fi
 
