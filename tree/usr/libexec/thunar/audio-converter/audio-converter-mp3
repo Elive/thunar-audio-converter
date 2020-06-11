@@ -59,10 +59,7 @@ main(){
         exit 1
     fi
 
-    if el_check_translations_required ; then
-        $guitool --warning --text="$( eval_gettext "This application is not fully translated to your language. You can run Eltrans and help us making it correctly translated for everybody!" )"
-    fi
-
+    el_check_translations_required "report"
 
 
     let "INCREMENT=10000000/$NUMBER_OF_FILES"
