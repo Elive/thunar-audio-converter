@@ -70,7 +70,7 @@ main(){
 
     mkdir -p "$tempdir"
 
-    if $guitool --question --text="$( eval_gettext "Delete original files after a successful conversion?" )" ; then
+    if $guitool --question --text="$( eval_gettext "Delete the original files after a successful conversion?" )" ; then
         is_delete_original=1
     fi
 
