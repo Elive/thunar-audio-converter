@@ -119,7 +119,7 @@ main(){
                 fi
 
                 if [[ -z "${GENRE_NUM}" ]] ; then
-                    GENRE_NUM="$( id3v2 -L | sed 's|: |\n|g' | $guitool --list --title="$( eval_gettext "Select a Genre" )"": $GENRE" --column="id" --column="$( eval_gettext "Genre" )" --height=400 )"
+                    GENRE_NUM="$( id3v2 -L | sed 's|: |\n|g' | $guitool --list --title="$( eval_gettext "Select a genre" )"": $GENRE" --column="id" --column="$( eval_gettext "Genre" )" --height=400 )"
                 fi
 
                 flac -s -c -d "$file" | lame --quiet --vbr-new -V 3 -q 0 - -o "${tempdir}/third.mp3"
@@ -197,7 +197,7 @@ main(){
                 fi
 
                 if [[ -z "${GENRE_NUM}" ]] ; then
-                    GENRE_NUM="$( id3v2 -L | sed 's|: |\n|g' | $guitool --list --title="$( eval_gettext "Select a Genre" )"": $GENRE" --column="id" --column="$( eval_gettext "Genre" )" --height=400 )"
+                    GENRE_NUM="$( id3v2 -L | sed 's|: |\n|g' | $guitool --list --title="$( eval_gettext "Select a genre" )"": $GENRE" --column="id" --column="$( eval_gettext "Genre" )" --height=400 )"
                 fi
 
                 mplayer -really-quiet -af volnorm=0 -vo null -noconsolecontrols -af resample=44100 -ao pcm:waveheader:file="${tempdir}/second.wav" "${tempdir}/first.${extension}" 2>/dev/null
