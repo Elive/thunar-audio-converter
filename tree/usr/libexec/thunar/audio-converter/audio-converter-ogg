@@ -7,7 +7,6 @@ EL_REPORTS="1"
 TEXTDOMAIN="thunar-audio-converter"
 export TEXTDOMAIN
 
-
 #lockfile="/tmp/.$(basename $0)-${USER}.lock"
 
 exit_ok(){
@@ -42,7 +41,7 @@ trap "exit_error" 1 3 5 6 14 15 ERR TERM
 
 main(){
     # pre {{{
-    local file PROCESS NUMBER_OF_FILES ARTIST TITLE ALBUM GENRE TRACKNUMBER DATEYEAR file_dest_dir GENRE_NUM GENRE_NUM2 is_delete_original PROGRESS filename guitool tempdir extension
+    local file PROCESS NUMBER_OF_FILES ARTIST TITLE ALBUM GENRE TRACKNUMBER DATEYEAR file_dest_dir GENRE_NUM GENRE_NUM2 PROGRESS filename guitool tempdir extension
     # How many files to make the progress bar
     PROGRESS=0
     NUMBER_OF_FILES="$#"
@@ -67,7 +66,7 @@ main(){
 
     mkdir -p "$tempdir"
 
-    if $guitool --question --text="$( eval_gettext "Delete the original files after a successful conversion?" )" ; then
+    if $guitool --question --text="$( eval_gettext "Would you like to delete the original files after a successful conversion?" )" ; then
         is_delete_original=1
     fi
 
@@ -121,6 +120,9 @@ main(){
 
                 if [[ -z "${GENRE_NUM}" ]] ; then
                     GENRE_NUM="$( id3v2 -L | sed 's|: |\n|g' | $guitool --list --title="$( eval_gettext "Select a Genre" )"": $GENRE" --column="id" --column="$( eval_gettext "Genre" )" --height=400 )"
+                fi
+                if [[ -z "${GENRE_NUM}" ]] ; then
+                    GENRE_NUM=0
                 fi
 
                 flac -s -c -d "$file" | oggenc -q 6 -Q -a "${ARTIST}" -G "${GENRE}" -t "${TITLE}" -d "${DATEYEAR}" -n "${TRACKNUMBER}" -l "${ALBUM}"  - -o "${tempdir}/third.ogg"
@@ -186,7 +188,9 @@ main(){
                 if [[ -z "${GENRE_NUM}" ]] ; then
                     GENRE_NUM="$( id3v2 -L | sed 's|: |\n|g' | $guitool --list --title="$( eval_gettext "Select a Genre" )"": $GENRE" --column="id" --column="$( eval_gettext "Genre" )" --height=400 )"
                 fi
-
+                if [[ -z "${GENRE_NUM}" ]] ; then
+                    GENRE_NUM=0
+                fi
 
                 mplayer -really-quiet -af volnorm=0 -vo null -noconsolecontrols -af resample=44100 -ao pcm:waveheader:file="${tempdir}/second.wav" "${tempdir}/first.${extension}" 2>/dev/null
                 oggenc -q 6 -Q -a "${ARTIST}" -G "${GENRE}" -t "${TITLE}" -d "${DATEYEAR}" -n "${TRACKNUMBER}" -l "${ALBUM}" "${tempdir}/second.wav" -o "${tempdir}/third.ogg"
