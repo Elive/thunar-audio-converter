@@ -37,6 +37,7 @@ trap "exit_error" 1 3 5 6 14 15 ERR TERM
 # SET the lock file
 #echo "$$" > "$lockfile"
 
+export LC_NUMERIC=C
 
 
 main(){
@@ -45,7 +46,11 @@ main(){
     # How many files to make the progress bar
     PROGRESS=0
     NUMBER_OF_FILES="$#"
+    INCREMENT="$( echo "100 / $NUMBER_OF_FILES" | bc -l )"
 
+    if ! el_dependencies_check "bc" ; then
+        el_dependencies_install bc
+    fi
 
     guitool=zenity
     tempdir="/tmp/.${USER}-audio-converter-$$"
@@ -74,7 +79,7 @@ main(){
     (
     for file in "$@"
     do
-        echo "$(( ${PROGRESS%%.*} / 100000 ))"
+        echo "$PROGRESS"
         file="$file"
         filename="${file##*/}"
         filenameraw="${filename%.*}"
@@ -220,7 +225,7 @@ main(){
 
         rm -rf "${tempdir}"
 
-        let "PROGRESS+=$INCREMENT"
+        PROGRESS="$( echo "$PROGRESS + $INCREMENT" | bc -l )"
 
 
     done
