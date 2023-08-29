@@ -46,7 +46,7 @@ main(){
     # How many files to make the progress bar
     PROGRESS=0
     NUMBER_OF_FILES="$#"
-    INCREMENT="$( echo "100 / $NUMBER_OF_FILES" | bc -l )"
+    INCREMENT="$( echo "100 / $NUMBER_OF_FILES" | LC_ALL=C bc -l | sed -e 's|\..*$||g' )"
 
     if ! el_dependencies_check "bc" ; then
         el_dependencies_install bc
@@ -67,7 +67,7 @@ main(){
     el_check_translations_required "report"
 
 
-    let "INCREMENT=10000000/$NUMBER_OF_FILES"
+    let "INCREMENT=100/$NUMBER_OF_FILES"
 
     mkdir -p "$tempdir"
 
@@ -240,7 +240,7 @@ main(){
 
         rm -rf "${tempdir}"
 
-        PROGRESS="$( echo "$PROGRESS + $INCREMENT" | bc -l )"
+        PROGRESS="$( echo "$PROGRESS + $INCREMENT" | LC_ALL=C bc -l | sed -e 's|\..*$||g' )"
 
 
     done
